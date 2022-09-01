@@ -6,21 +6,16 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Typography,
-  Stack,
-  Avatar,
   Box,
-  IconButton,
-  Menu,
-  MenuItem,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import { KeyboardArrowUp } from '@mui/icons-material';
+import Image from 'next/image'
 import React, { Fragment } from 'react';
 import moment from 'moment';
 import Link from 'next/link';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import { useRouter } from 'next/router'
 
 const MenuContainer = styled(List)(({ theme }) => ({
   padding: 10,
@@ -35,22 +30,23 @@ const MenuContainer = styled(List)(({ theme }) => ({
   '.MuiListItemButton-root': {
     borderRadius: 10,
     marginBottom: 10,
-    '&:hover': {
+    '.MuiListItemIcon-root': {
+      minWidth: 40
+    },
+    '.MuiListItemText-root': {
+      textTransform: 'uppercase',
+    },
+    '&:hover, &.selected': {
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
       '&.logo': {
         backgroundColor: 'transparent',
       },
       '.MuiTypography-root': {
         color: '#FFF',
+        
       },
     },
-  },
-  '.MuiListItemButton-root.active': {
-    backgroundColor: '#FFF',
-    '.MuiTypography-root': {
-      color: '#000',
-    },
-  },
+  }
 }));
 
 const Drawer = styled(DrawerBase)(({ theme }) => ({
@@ -68,15 +64,12 @@ const LogoContainer = styled('div')`
   text-align: center;
 `;
 
-const MenuLink = styled(Link)`
-
-`
+const MenuLink = styled(Link)``
 
 
 const SideBar = () => {
-  const [menuAnchor, setMenuAnchor] = React.useState<any>(null);
-
-  const menuOpen = Boolean(menuAnchor);
+  const router = useRouter();
+  const currentRoute = router.pathname;
 
   const menus = [
     {
@@ -111,14 +104,12 @@ const SideBar = () => {
         },
       }}
       variant="permanent"
-    // anchor="left"
     >
       <MenuContainer>
         <Link href="/">
           <ListItemButton className="logo">
             <LogoContainer>
-              <Typography>LOGO</Typography>
-              <Typography variant="body2">TVT Corp</Typography>
+              <Image src="/logo.png" alt="Logo" width={100} height={100} />
             </LogoContainer>
           </ListItemButton>
         </Link>
@@ -132,6 +123,7 @@ const SideBar = () => {
               <MenuLink key={index} href={menu.link}>
                 <ListItemButton
                   key={menu.title}
+                  className={currentRoute === menu.link ? 'selected' : ''}
                 ><ListItemIcon>
                     {menu.icon}
                   </ListItemIcon>

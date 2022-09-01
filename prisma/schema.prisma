@@ -19,7 +19,7 @@ model Order {
   shippingSupplier String
   status String
   deliveryDueDate DateTime
-  deliveryTime DateTime
+  deliveryTime DateTime?
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

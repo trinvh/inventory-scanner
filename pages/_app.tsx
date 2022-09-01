@@ -15,6 +15,7 @@ import '../styles/globals.css';
 import { Decimal } from "decimal.js"
 import SuperJSON from 'superjson'
 import SideBar from '../components/layout/SideBar';
+import { Suspense } from 'react';
 
 SuperJSON.registerCustom<Decimal, string>(
   {
@@ -41,11 +42,13 @@ const MyApp: React.FunctionComponent<MyAppProps> = (props) => {
     <CacheProvider value={emotionCache}>
       <ThemeProvider theme={lightTheme}>
         <CssBaseline />
-        
+
         <Box sx={{ display: 'flex', minHeight: '100vh' }}>
           <SideBar />
           <Box component="main" sx={{ flexGrow: 1 }}>
-            <Component {...pageProps} />
+            <Suspense fallback={'Loading...'}>
+              <Component {...pageProps} />
+            </Suspense>
           </Box>
         </Box>
       </ThemeProvider>

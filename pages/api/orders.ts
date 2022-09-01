@@ -2,19 +2,27 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { save, paginate } from "../../services/repositories/orderRepository"
 import { Order } from '@prisma/client';
+import moment from 'moment'
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
   if (req.method === 'POST') {
-    const orders: Order[] = req.body;
+    const { orders } = req.body;
     for(const order of orders) {
-      await save(order)
+      try {
+        order.deliveryDueDate = moment(order.deliveryDueDate).toDate()
+        await save(order)
+      } catch {}
     }
     
     return res.json(orders)
   } else if (req.method === 'GET') {
-    return await paginate(1, 20)
+    const { page, limit, type } = req.query
+    const result = await paginate(page ? Number(page) : 1, limit ? Number(limit) : 20, String(type))
+    return res.json(result)
   }
+
+  return res.json({ success: true })
 }

@@ -14,3 +14,7 @@ a {
 * {
   box-sizing: border-box;
 }
+
+.MuiPickerStaticWrapper-content > div > div:first-child {
+  display: none;
+}
