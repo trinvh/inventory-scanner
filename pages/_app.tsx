@@ -16,6 +16,7 @@ import { Decimal } from "decimal.js"
 import SuperJSON from 'superjson'
 import SideBar from '../components/layout/SideBar';
 import { Suspense } from 'react';
+import { NextPage } from 'next';
 
 SuperJSON.registerCustom<Decimal, string>(
   {
@@ -26,34 +27,41 @@ SuperJSON.registerCustom<Decimal, string>(
   'decimal.js'
 );
 
-interface MyAppProps extends AppProps {
-  emotionCache?: EmotionCache;
-}
-
 const clientSideEmotionCache = createEmotionCache();
 
 const lightTheme = createTheme(lightThemeOptions);
 const darkTheme = createTheme(darkThemeOptions)
 
-const MyApp: React.FunctionComponent<MyAppProps> = (props) => {
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout
+  emotionCache?: EmotionCache;
+}
+
+export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: React.ReactElement) => React.ReactElement
+}
+
+const MyApp: React.FunctionComponent<AppPropsWithLayout> = (props) => {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
-  return (
-    <CacheProvider value={emotionCache}>
-      <ThemeProvider theme={lightTheme}>
-        <CssBaseline />
+  const getLayout = Component.getLayout ?? ((page) => {
+    return <CacheProvider value={emotionCache}>
+    <ThemeProvider theme={lightTheme}>
+      <CssBaseline />
 
-        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-          <SideBar />
-          <Box component="main" sx={{ flexGrow: 1 }}>
-            <Suspense fallback={'Loading...'}>
-              <Component {...pageProps} />
-            </Suspense>
-          </Box>
+      <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+        <SideBar />
+        <Box component="main" sx={{ flexGrow: 1 }}>
+          <Suspense fallback={'Loading...'}>
+            {page}
+          </Suspense>
         </Box>
-      </ThemeProvider>
-    </CacheProvider>
-  );
+      </Box>
+    </ThemeProvider>
+  </CacheProvider>
+  })
+
+  return getLayout(<Component {...pageProps} />)
 };
 
 export default MyApp;

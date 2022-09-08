@@ -25,6 +25,7 @@ model Order {
   updatedAt     DateTime  @updatedAt
 
   @@index([marketplace])
+  @@index([shippingSupplier])
   @@index([orderNumber])
   @@index([status])
 }

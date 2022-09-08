@@ -1,5 +1,5 @@
 import React from 'react'
-import { FormControl, InputLabel, Box, Button, Select, MenuItem, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemAvatar, ListItemText, Paper, Stack, styled, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tabs, TextField, Toolbar, Typography, LinearProgress } from '@mui/material'
+import { FormControl, InputLabel, Box, Button, Select, MenuItem, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemAvatar, ListItemText, Paper, Stack, styled, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tabs, TextField, Toolbar, Typography, LinearProgress, NoSsr, Badge } from '@mui/material'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -12,11 +12,9 @@ import LoadingOverlay from '../components/LoadingOverlay'
 import axios from 'axios'
 import { DataGrid } from '@mui/x-data-grid';
 import { TabContext, TabPanel, TabList } from '@mui/lab'
-import { LocalizationProvider } from '@mui/x-date-pickers-pro';
-import { AdapterMoment } from '@mui/x-date-pickers-pro/AdapterMoment';
-import { StaticDateRangePicker } from '@mui/x-date-pickers-pro/StaticDateRangePicker';
-import { DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
+
 import moment from 'moment'
+import ExportDialog from '../components/dialogs/ExportDialog'
 const columns = [
   {
     field: 'marketplace',
@@ -84,11 +82,10 @@ const Home: NextPage<ServerProps> = ({ }) => {
   const [dataLoading, setDataLoading] = React.useState(false)
   const [data, setData] = React.useState<PaginationData>()
   const [page, setPage] = React.useState(1)
+  const [statistics, setStatistics] = React.useState({ total: 0, pending: 0, delivered: 0})
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [exportShown, setExportShown] = React.useState(false)
-  const [dateRange, setDateRange] = React.useState<DateRange<moment.Moment>>([null, null]);
-  const [marketplace, setMarketplace] = React.useState('all')
-  const [deliveryType, setDeliveryType] = React.useState('all')
+
 
   const handleChangePage = (event: any, newPage: number) => {
     setPage(newPage);
@@ -110,6 +107,8 @@ const Home: NextPage<ServerProps> = ({ }) => {
     try {
       const result = await axios.get(`/api/orders?page=${page}&limit=${rowsPerPage}&type=${type}`)
       setData(result.data)
+      const statisticsResult = await axios.get(`/api/orders/statistics`)
+      setStatistics(statisticsResult.data)
     } catch { }
     finally {
       setDataLoading(false)
@@ -156,103 +155,10 @@ const Home: NextPage<ServerProps> = ({ }) => {
     reader.readAsBinaryString(file)
   }
 
-  const exportFile = async () => {
-    setExportShown(false)
-    setLoading(true)
-    try {
-      const response = await axios.post(`/api/orders/filter`, {
-        marketplace: marketplace,
-        dateRange: dateRange,
-        deliveryType
-      })
-      const orders = response.data.orders.map((item: any) => {
-        return {
-          'Sàn': item.marketplace,
-          'Mã đơn hàng': item.orderId,
-          'Mã vẫn đơn': item.orderNumber,
-          'Đơn vị vận chuyển': item.shippingSupplier,
-          'Trạng thái': item.status,
-          'Hạn giao hàng': item.deliveryDueDate,
-          'Ngày nhập đơn hàng': item.createdAt,
-          'Ngày giao vận chuyển': item.deliveryTime,
-        }
-      })
-      const workBook = XLSX.utils.book_new()
-      const workSheet = XLSX.utils.json_to_sheet(orders)
-      XLSX.utils.book_append_sheet(workBook, workSheet, 'Export')
-      const uint8Array = XLSX.write(workBook, { type: 'array', bookType: 'xlsx'})
-      var blob = new Blob([uint8Array], {type:"application/octet-stream"});
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.download = `Export-${moment().unix()}.xlsx`;
-      a.href = url;
-      document.body.appendChild(a);
-      a.click();
-    } catch {}
-    finally {
-      setLoading(false)
-    }
-  }
-
   return (
-    <>
+    <NoSsr>
       <LoadingOverlay visible={loading} />
-      <Dialog open={exportShown} onClose={() => setExportShown(false)} maxWidth={'lg'}>
-        <DialogTitle>Xuất dữ liệu</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Chọn dữ liệu cần xuất {JSON.stringify(dateRange)}
-          </DialogContentText>
-          <FormControl fullWidth sx={{ mt: 3 }}>
-            <InputLabel id="demo-simple-select-label">Sàn điện tử</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={marketplace}
-              label="Sàn"
-              onChange={(event: any) => setMarketplace(event.target.value)}
-            >
-              <MenuItem value={'all'}>Tất cả</MenuItem>
-              <MenuItem value={'Lazada'}>Lazada</MenuItem>
-              <MenuItem value={'Shopee'}>Shopee</MenuItem>
-              <MenuItem value={'Tiki'}>Tiki</MenuItem>
-              <MenuItem value={'Tiktok'}>Tiktok</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth sx={{ mt: 1 }}>
-            <InputLabel>Tình trạng đơn</InputLabel>
-            <Select
-              value={deliveryType}
-              label="Tình trạng đơn"
-              onChange={(event: any) => setDeliveryType(event.target.value)}
-            >
-              <MenuItem value={'all'}>Tất cả</MenuItem>
-              <MenuItem value={'done'}>Đã giao</MenuItem>
-              <MenuItem value={'pending'}>Chưa giao</MenuItem>
-            </Select>
-          </FormControl>
-          <LocalizationProvider dateAdapter={AdapterMoment}>
-            <StaticDateRangePicker
-              displayStaticWrapperAs="desktop"
-              value={dateRange}
-              onChange={(newValue: any) => {
-                setDateRange(newValue);
-              }}
-              renderInput={(startProps: any, endProps: any) => (
-                <React.Fragment>
-                  <TextField {...startProps} />
-                  <Box sx={{ mx: 2 }}> to </Box>
-                  <TextField {...endProps} />
-                </React.Fragment>
-              )}
-            />
-          </LocalizationProvider>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setExportShown(false)}>Cancel</Button>
-          <Button onClick={() => exportFile()}>Export</Button>
-        </DialogActions>
-      </Dialog>
+      <ExportDialog visible={exportShown} close={() => setExportShown(false)} />
       <Head>
         <title>Danh sách đơn hàng</title>
         <meta name="description" content="Generated by create next app" />
@@ -273,12 +179,21 @@ const Home: NextPage<ServerProps> = ({ }) => {
         <TabContext value={tab}>
           <Box>
             <TabList onChange={handleTabChange}>
-              <Tab label="Tất cả" value='1' />
-              <Tab label="Chờ giao vận chuyển" value='2' />
-              <Tab label="Đã giao vận chuyển" value='3' />
+              <Tab label={<Stack direction="row">
+                <Typography>Tất cả</Typography>
+                <Chip sx={{ ml: 1 }} size="small" label={statistics.total} />
+              </Stack>} value='1' />
+              <Tab label={<Stack direction="row">
+                <Typography>Chờ giao vận chuyển</Typography>
+                <Chip sx={{ ml: 1 }} size="small" label={statistics.pending} />
+              </Stack>} value='2' />
+              <Tab label={<Stack direction="row">
+                <Typography>Đã giao vận chuyển</Typography>
+                <Chip sx={{ ml: 1 }} size="small" label={statistics.delivered} />
+              </Stack>} value='3' />
             </TabList>
           </Box>
-          
+
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
               <TableHead>
@@ -289,7 +204,7 @@ const Home: NextPage<ServerProps> = ({ }) => {
 
                 </TableRow>
               </TableHead>
-              
+
               <TableBody>
                 {data?.items?.map((row: any) => (
                   <TableRow
@@ -322,7 +237,7 @@ const Home: NextPage<ServerProps> = ({ }) => {
           </TableContainer>
         </TabContext>
       </Box>
-    </>
+    </NoSsr>
   )
 }
 

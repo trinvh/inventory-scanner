@@ -83,3 +83,21 @@ export const findAll = async (marketplace: string, deliveryType: string, dateRan
   })
   return orders
 }
+
+export const statistics = async () => {
+  return {
+    total: await prisma.order.count(),
+    pending: await prisma.order.count({
+      where: {
+        deliveryTime: null,
+      }
+    }),
+    delivered: await prisma.order.count({
+      where: {
+        NOT: {
+          deliveryTime: null
+        }
+      }
+    })
+  }
+}
