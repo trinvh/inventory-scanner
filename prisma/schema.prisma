@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
+  binaryTargets   = ["native", "linux-musl"]
 }
 
 datasource db {
@@ -12,17 +13,17 @@ datasource db {
 }
 
 model Order {
-  id String @id @default(uuid())
-  marketplace String
-  orderId String @unique()
-  orderNumber String @unique()
+  id               String    @id @default(uuid())
+  marketplace      String
+  orderId          String    @unique()
+  orderNumber      String    @unique()
   shippingSupplier String
-  status String
-  deliveryDueDate DateTime
-  deliveryTime DateTime?
+  status           String
+  deliveryDueDate  DateTime
+  deliveryTime     DateTime?
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([marketplace])
   @@index([shippingSupplier])

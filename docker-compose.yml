@@ -1,0 +1,24 @@
+version: "3"
+services:
+  client:
+    container_name: nextjs
+    build: .
+    environment:
+      DATABASE_URL: "postgresql://postgres:trinvh@2022@postgres:5432/postgres?schema=public"
+    ports:
+      - "3000:3000"
+    # volumes:
+    #   - ./start2.sh:/app/start.sh
+    # entrypoint: node server.js
+    # command: "sleep 1000"
+    # command: "/usr/bin/node server.js"
+  db:
+    container_name: postgres
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: trinvh@2022
+    ports:
+      - "5433:5432"
+    volumes:
+      - "./.dbdata/postgres:/var/lib/postgresql/data"

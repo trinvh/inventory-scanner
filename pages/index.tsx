@@ -82,7 +82,7 @@ const Home: NextPage<ServerProps> = ({ }) => {
   const [dataLoading, setDataLoading] = React.useState(false)
   const [data, setData] = React.useState<PaginationData>()
   const [page, setPage] = React.useState(1)
-  const [statistics, setStatistics] = React.useState({ total: 0, pending: 0, delivered: 0})
+  const [statistics, setStatistics] = React.useState({ total: 0, pending: 0, delivered: 0 })
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [exportShown, setExportShown] = React.useState(false)
 
@@ -239,6 +239,12 @@ const Home: NextPage<ServerProps> = ({ }) => {
       </Box>
     </NoSsr>
   )
+}
+
+export const config = {
+  unstable_includeFiles: [
+    'node_modules/next/dist/compiled/@edge-runtime/primitives/**/*.+(js|json)',
+  ],
 }
 
 export default Home
