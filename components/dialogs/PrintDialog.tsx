@@ -62,8 +62,10 @@ const PrintDialog = (props: PrintDialogProps) => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'In đơn đã quét',
-    onBeforeGetContent: async () => await new Promise((resolve) => setTimeout(() => resolve(true), 100)),
-    pageStyle: pageStyle
+    onBeforeGetContent: async () => await new Promise((resolve) => setTimeout(() => resolve(true), 500)),
+    pageStyle: pageStyle,
+    copyStyles: true,
+    removeAfterPrint: true
   });
 
   React.useEffect(() => {
@@ -81,6 +83,7 @@ const PrintDialog = (props: PrintDialogProps) => {
         const response = await axios.post(`/api/orders/filter`, {
           marketplace: marketplace,
           dateRange: dateRange,
+          shippingSupplier: shippingSupplier,
           deliveryType
         })
         setItems(response.data.orders)
@@ -188,35 +191,38 @@ const PrintDialog = (props: PrintDialogProps) => {
         <div style={{ display: 'none' }}>
           <div ref={printRef}>
             <PrintTable>
-              <tr>
-                <th>Sàn</th>
-                <th>Mã đơn hàng</th>
-                <th>Mã vận đơn</th>
-                <th>Vận chuyển</th>
-                <th>Hạn giao hàng</th>
-                <th>Trạng thái</th>
-                <th>Ngày giao</th>
-                <th>Trễ/Đúng hạn</th>
-              </tr>
-              {items.map((item: any) => {
-                const isExpired = moment(item.deliveryTime).isAfter(moment(item.deliveryDueDate))
-                return <tr
-                  key={item.id}
-                  className={isExpired ? 'expired' : ''}
-                >
-                  <td>
-                    {item.marketplace}
-                  </td>
-                  <td align="left">{item.orderId}</td>
-                  <td align="left">{item.orderNumber}</td>
-                  <td align="left">{item.shippingSupplier}</td>
-                  <td align="left">{moment(item.deliveryDueDate).format('YYYY-MM-DD HH:mm')}</td>
-                  <td align="left">{item.status}</td>
-                  <td align="left">{moment(item.deliveryTime).isValid() ? moment(item.deliveryTime).format('YYYY-MM-DD HH:mm') : ''}</td>
-                  <td align="left">{isExpired ? 'Giao trễ hạn' : 'Giao đúng hạn'}</td>
+              <thead>
+                <tr>
+                  <th>Sàn</th>
+                  <th>Mã đơn hàng</th>
+                  <th>Mã vận đơn</th>
+                  <th>Vận chuyển</th>
+                  <th>Hạn giao hàng</th>
+                  <th>Trạng thái</th>
+                  <th>Ngày giao</th>
+                  <th>Trễ/Đúng hạn</th>
                 </tr>
-              })}
-
+              </thead>
+              <tbody>
+                {items.map((item: any) => {
+                  const isExpired = moment(item.deliveryTime).isAfter(moment(item.deliveryDueDate))
+                  return <tr
+                    key={item.id}
+                    className={isExpired ? 'expired' : ''}
+                  >
+                    <td>
+                      {item.marketplace}
+                    </td>
+                    <td align="left">{item.orderId}</td>
+                    <td align="left">{item.orderNumber}</td>
+                    <td align="left">{item.shippingSupplier}</td>
+                    <td align="left">{moment(item.deliveryDueDate).format('YYYY-MM-DD HH:mm')}</td>
+                    <td align="left">{item.status}</td>
+                    <td align="left">{moment(item.deliveryTime).isValid() ? moment(item.deliveryTime).format('YYYY-MM-DD HH:mm') : ''}</td>
+                    <td align="left">{isExpired ? 'Giao trễ hạn' : 'Giao đúng hạn'}</td>
+                  </tr>
+                })}
+              </tbody>
             </PrintTable>
           </div>
         </div>
