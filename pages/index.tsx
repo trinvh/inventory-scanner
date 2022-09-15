@@ -1,5 +1,5 @@
 import React from 'react'
-import { FormControl, InputLabel, Box, Button, Select, MenuItem, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemAvatar, ListItemText, Paper, Stack, styled, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tabs, TextField, Toolbar, Typography, LinearProgress, NoSsr, Badge } from '@mui/material'
+import { FormControl, InputLabel, Box, Button, Select, MenuItem, Chip, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, List, ListItem, ListItemAvatar, ListItemText, Paper, Stack, styled, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tabs, TextField, Toolbar, Typography, LinearProgress, NoSsr, Badge, Snackbar, Alert } from '@mui/material'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
@@ -85,6 +85,9 @@ const Home: NextPage<ServerProps> = ({ }) => {
   const [statistics, setStatistics] = React.useState({ total: 0, pending: 0, delivered: 0 })
   const [rowsPerPage, setRowsPerPage] = React.useState(10)
   const [exportShown, setExportShown] = React.useState(false)
+  const [isSnackbarShown, setIsSnackbarShown] = React.useState(false)
+  const [snackbarType, setSnackbarType] = React.useState<'success' | 'error'>('success')
+  const [snackbarMessage, setSnackbarMessage] = React.useState('')
 
 
   const handleChangePage = (event: any, newPage: number) => {
@@ -130,7 +133,7 @@ const Home: NextPage<ServerProps> = ({ }) => {
     reader.onload = async (e: any) => {
       try {
         const bstr = e.target.result
-        const workBook = XLSX.read(bstr, { type: "binary" })
+        const workBook = XLSX.read(bstr, { type: "binary", cellDates: true })
         const workSheet = workBook.Sheets[workBook.SheetNames[0]]
         const fileData = XLSX.utils.sheet_to_json(workSheet, { header: 1 })
         const data = fileData.slice(1)
@@ -146,9 +149,16 @@ const Home: NextPage<ServerProps> = ({ }) => {
           orders: orders
         })
         await loadData()
-      } catch { }
+        setSnackbarType('success')
+        setSnackbarMessage('Import thành công')
+      } catch (e: any) {
+        const message = e.response?.data?.message ?? e.message
+        setSnackbarType('error')
+        setSnackbarMessage(message)
+      }
       finally {
         setLoading(false)
+        setIsSnackbarShown(true)
         event.target.value = null
       }
     }
@@ -158,6 +168,13 @@ const Home: NextPage<ServerProps> = ({ }) => {
   return (
     <NoSsr>
       <LoadingOverlay visible={loading} />
+      <Snackbar
+        open={isSnackbarShown}
+        autoHideDuration={6000}
+        onClose={() => setIsSnackbarShown(false)}
+      >
+        <Alert onClose={() => setIsSnackbarShown(false)} severity={snackbarType} sx={{ width: '100%' }}>{snackbarMessage}</Alert>
+      </Snackbar>
       <ExportDialog visible={exportShown} close={() => setExportShown(false)} />
       <Head>
         <title>Danh sách đơn hàng</title>

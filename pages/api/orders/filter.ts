@@ -6,9 +6,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<any>
 ) {
-  const { marketplace, dateRange, deliveryType } = req.body
+  const { marketplace, shippingSupplier, dateRange, deliveryType } = req.body
 
-  const orders = await findAll(marketplace, deliveryType, dateRange)
+  const orders = await findAll(marketplace, shippingSupplier, deliveryType, dateRange)
 
   return res.json({
     orders: orders

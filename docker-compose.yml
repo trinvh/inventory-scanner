@@ -6,6 +6,7 @@ services:
     restart: always
     environment:
       DATABASE_URL: "postgresql://postgres:trinvh@2022@postgres:5432/postgres?schema=public"
+      TZ: Asia/Ho_Chi_Minh
     ports:
       - "3000:3000"
     # volumes:
@@ -19,6 +20,7 @@ services:
     restart: always
     environment:
       POSTGRES_PASSWORD: trinvh@2022
+      TZ: Asia/Ho_Chi_Minh
     ports:
       - "5433:5432"
     volumes:

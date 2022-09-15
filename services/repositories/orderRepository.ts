@@ -13,6 +13,42 @@ export const save = async (order: Order) => {
   })
 }
 
+export const batchSave = async (orders: Order[]) => {
+  const orderIds = orders.map(o => o.orderId)
+  const orderNumbers = orders.map(o => o.orderNumber)
+  const orderIdsExist = await prisma.order.findMany({
+    where: {
+      orderId: {
+        in: orderIds
+      }
+    }
+  })
+  if (orderIdsExist.length > 0) {
+    throw new Error(`Import thất bại. Mã đơn hàng trùng: ${orderIdsExist.map(x => x.orderId).join(', ')}`)
+  }
+
+  const orderNumbersExist = await prisma.order.findMany({
+    where: {
+      orderNumber: {
+        in: orderNumbers
+      }
+    }
+  })
+  if (orderNumbersExist.length > 0) {
+    throw new Error(`Import thất bại. Mã đơn hàng trùng: ${orderNumbersExist.map(x => x.orderId).join(', ')}`)
+  }
+
+  let queries = []
+  for (const order of orders) {
+    const query = prisma.order.create({
+      data: order
+    })
+    queries.push(query)
+  }
+
+  await prisma.$transaction(queries)
+}
+
 export const paginate = async (page: number = 1, limit: number = 20, type?: string) => {
   const whereClause = {
     ...type === 'pending' ? { deliveryTime: null } : {},
@@ -66,13 +102,14 @@ export const updateToDelivered = async (id: string) => {
   return order
 }
 
-export const findAll = async (marketplace: string, deliveryType: string, dateRange: string[]) => {
+export const findAll = async (marketplace: string, shippingSupplier: string, deliveryType: string, dateRange: string[]) => {
   let from = dateRange[0] ? moment(dateRange[0]).toDate() : moment().subtract(5, 'years').toDate()
   let to = dateRange[1] ? moment(dateRange[1]).toDate() : moment().add(5, 'years').toDate()
 
   const orders = await prisma.order.findMany({
     where: {
       ...marketplace && marketplace !== 'all' ? { marketplace } : {},
+      ...shippingSupplier && shippingSupplier !== 'all' ? { shippingSupplier } : {},
       ...deliveryType === 'pending' ? { deliveryTime: null } : {},
       ...deliveryType === 'done' ? { NOT: [{ deliveryTime: null }] } : {},
       createdAt: {
