@@ -63,7 +63,7 @@ const PrintDialog = (props: PrintDialogProps) => {
   const handlePrint = useReactToPrint({
     content: () => printRef.current,
     documentTitle: 'In đơn đã quét',
-    onBeforeGetContent: async () => await new Promise((resolve) => setTimeout(() => resolve(true), 500)),
+    onBeforeGetContent: async () => await new Promise((resolve) => setTimeout(() => resolve(true), 1000)),
     pageStyle: pageStyle,
     copyStyles: true,
     removeAfterPrint: true
@@ -93,7 +93,7 @@ const PrintDialog = (props: PrintDialogProps) => {
     finally {
       setLoading(false)
       handlePrint()
-      props.close()
+      // props.close()
     }
   }
 
