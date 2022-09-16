@@ -8,6 +8,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import moment from 'moment';
 import { useReactToPrint } from 'react-to-print';
+import { normalizeDateRange } from '../../utility';
 
 const PrintTable = styled('table')`
   width: 100%;
@@ -82,7 +83,7 @@ const PrintDialog = (props: PrintDialogProps) => {
       if (range === 'custom') {
         const response = await axios.post(`/api/orders/filter`, {
           marketplace: marketplace,
-          dateRange: dateRange,
+          dateRange: normalizeDateRange(dateRange),
           shippingSupplier: shippingSupplier,
           deliveryType
         })
@@ -92,7 +93,7 @@ const PrintDialog = (props: PrintDialogProps) => {
     finally {
       setLoading(false)
       handlePrint()
-      // props.close()
+      props.close()
     }
   }
 

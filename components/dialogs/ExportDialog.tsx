@@ -7,6 +7,7 @@ import { DateRange } from '@mui/x-date-pickers-pro/DateRangePicker';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import moment from 'moment';
+import { normalizeDateRange } from '../../utility';
 
 interface ExportDialogProps {
   visible: boolean
@@ -26,7 +27,7 @@ const ExportDialog = (props: ExportDialogProps) => {
       const response = await axios.post(`/api/orders/filter`, {
         marketplace: marketplace,
         shippingSupplier: shippingSupplier,
-        dateRange: dateRange,
+        dateRange: normalizeDateRange(dateRange),
         deliveryType
       })
       const orders = response.data.orders.map((item: any) => {
