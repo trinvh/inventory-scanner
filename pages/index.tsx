@@ -91,7 +91,7 @@ const Home: NextPage<ServerProps> = ({ }) => {
 
 
   const handleChangePage = (event: any, newPage: number) => {
-    setPage(newPage);
+    setPage(newPage + 1);
   };
 
   const handleChangeRowsPerPage = (event: any) => {
@@ -243,7 +243,7 @@ const Home: NextPage<ServerProps> = ({ }) => {
               </TableBody>
             </Table>
             <TablePagination
-              rowsPerPageOptions={[10, 30, 100]}
+              rowsPerPageOptions={[1, 10, 30, 100]}
               component="div"
               count={data?.pagination?.total ?? 0}
               rowsPerPage={data?.pagination?.limit ?? rowsPerPage}
